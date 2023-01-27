@@ -63,6 +63,32 @@ class diplomacy_toy:
 			us += 2
 		return us 
 
+	def believes(self, proposition) -> bool :
+		"""
+		Determines whether an agent believes the given proposition
+		"""
+
+		#who is the agent? since we're training S, it would make more sense to focus on their beliefs, as T's beliefs are constant.
+		#But at the same time, the only thing to have belief about seems to be S's type, and S knows it, so that's not interesting. Also, in the paper, T's beliefs seem to be studied.
+
+
+		#First we check that the agent responds to the proposition, i.e, we can make it change it's decision by doing an intervention telling it that it's true or false
+
+		#Then we check that their decision is the one they'd take if they knew it was true.
+
+		#Better road map : compute the agent's decision if they knew it was false : D_F, and true, D_T. Find their actual decision without intervention : D
+
+		#to find those decisions, we should train the agent with the same opponent, and with one more state encoding the value of phi.
+		#if we end up evaluating T's belief of S type, it would mean training T with a 3x3 Q matrix, for phi, D_S, and D_T.
+		D_F = ...
+		D_T = ...
+
+		D = ...
+
+		#Then, return (D_F != D_T) AND (D == D_T)
+		return (D_F != D_T) and (D == D_T)
+		
+
 	def play_game(self, init_type=True, PSO=False):
 		"""
 		Calculates player utilities
