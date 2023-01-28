@@ -63,7 +63,7 @@ class diplomacy_toy:
 			us += 2
 		return us 
 
-	def S_type_belief(self, type, Q) -> bool :
+	def S_type_belief_old(self, type, Q) -> bool :
 		"""
 		Determines whether S believes that its type is the given type
 		"""
@@ -85,10 +85,24 @@ class diplomacy_toy:
 		responds = D_F != D_T
 
 		#acts_as_true = np.argmax(Q[type]) == np.argmax(Q[self.type]) # that would be a general way to do it
-		acts_as_true = type == self.type # but in our narrow case, since S observes type, S acts as is phi is true if and only if phi is true
+		acts_as_true = type == self.type # but in our narrow case, since S observes type, S acts as if it knew phi is true if and only if phi is true
 
 		#The agent believes if it responds to the proposition with counterfactual knowledge, and it acts as if it's true
 		return responds and acts_as_true
+
+
+	def S_type_belief(self, type, Q) -> bool:
+		
+		#the setting format here is just the type, in [0, 1], so the policy is a function that takes a type and returns an action
+
+		policy = lambda type: np.argmax(Q[type])
+		counterfactual_policy = policy #in this special case, S already has access to the proposition
+
+		setting = self.type
+		setting_false = 1 - type
+		setting_true = type
+
+		return self.believes(policy, counterfactual_policy, setting, setting_false, setting_true)
 
 
 	def test_S_type_belief(self, Q):
@@ -100,9 +114,57 @@ class diplomacy_toy:
 		for actual_type in range(0, 2):
 			self.type = actual_type
 			for proposition_type in range(0, 2):
+
+				##old method
+				#old_do_believe = self.S_type_belief_old(proposition_type, Q)
+				#belief_text = "does believe" if old_do_believe else "doesnt believe"
+				#print(f"[OLD METHOD] When S's type is {type_name(actual_type)}, it {belief_text} that it is {type_name(proposition_type)}")
+
+				#new method
 				do_believe = self.S_type_belief(proposition_type, Q)
 				belief_text = "does believe" if do_believe else "doesnt believe"
 				print(f"When S's type is {type_name(actual_type)}, it {belief_text} that it is {type_name(proposition_type)}")
+
+				#print("	-> They yield the same result" if old_do_believe == do_believe else "	-> They differ :(")
+
+
+	def T_type_belief(self, type, D_S):
+
+		#The policy in that case takes S's decision and returns 1 (not attack) or 0 (attack)
+		policy = self.T_policy
+
+		#The counterfactual policy also takes the type (and in fact consequently ignores D_S)
+		counterfactual_policy = lambda settings : settings[1]
+
+		setting = D_S
+		setting_true = (D_S, type)
+		setting_false = (D_S, 1 - type)
+
+		return self.believes(policy, counterfactual_policy, setting, setting_false, setting_true)
+
+	def test_T_type_belief(self):
+
+		def type_name(type):
+			return "strong" if type == 1 else "weak"
+
+		print(f"\n\n==========TESTING=T=BELIEFS=========")
+		for D_S in range(0, 2):
+			for proposition_type in range(0, 2):
+				do_believe = self.T_type_belief(proposition_type, D_S)
+				belief_text = "does believe" if do_believe else "doesnt believe"
+				action_text = "defend" if D_S==1 else "attack"
+				print(f"When S chooses to {action_text}, T {belief_text} that it is {type_name(proposition_type)}")
+
+	def believes(self, policy, counterfactual_policy, setting, setting_false, setting_true) -> bool: #perhaps, we should give the proposition, and derive the setting true and false, and maybe also the counterfactual policy
+
+		D_F = counterfactual_policy(setting_false)
+		D_T = counterfactual_policy(setting_true)
+
+		responds = D_F != D_T
+
+		acts_as_true = policy(setting) == D_T
+
+		return responds and acts_as_true
 
 
 	def play_game(self, init_type=True, PSO=False):
@@ -170,3 +232,4 @@ if __name__ == '__main__':
 		print(ne)
 
 	game.test_S_type_belief(Q)
+	game.test_T_type_belief()
