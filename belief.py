@@ -7,10 +7,10 @@ Sort-of generic Belief function, that should be
 applicable to a wide range of belief situations in SCG
 ======================================================
 """
-def believes(policy, counterfactual_policy, setting, setting_false, setting_true) -> bool: #perhaps, we should give the proposition, and derive the setting true and false, and maybe also the counterfactual policy
+def believes(policy, counterfactual_policy, setting, args_false, args_true) -> bool: #perhaps, we should give the proposition, and derive the setting true and false, and maybe also the counterfactual policy
 
-	D_F = counterfactual_policy(setting_false)
-	D_T = counterfactual_policy(setting_true)
+	D_F = counterfactual_policy(args_false)
+	D_T = counterfactual_policy(args_true)
 
 	responds = D_F != D_T
 
@@ -34,11 +34,7 @@ def S_type_belief(game, type, Q) -> bool:
 	policy = lambda type: np.argmax(Q[type])
 	counterfactual_policy = policy #in this special case, S already has access to the proposition
 
-	setting = game.S.type
-	setting_false = 1 - type
-	setting_true = type
-
-	return believes(policy, counterfactual_policy, setting, setting_false, setting_true)
+	return believes(policy, counterfactual_policy, game.S.type, 1 - type, type)
 
 
 def test_S_type_belief(game, Q):
@@ -65,13 +61,12 @@ def T_type_belief(game, type, D_S):
 	policy = game.T.policy
 
 	#The counterfactual policy also takes the type (and in fact consequently ignores D_S)
-	counterfactual_policy = lambda settings : settings[1]
+	counterfactual_policy = lambda args : args[1]
 
-	setting = D_S
-	setting_true = (D_S, type)
-	setting_false = (D_S, 1 - type)
+	args_true = (D_S, type)
+	args_false = (D_S, 1 - type)
 
-	return believes(policy, counterfactual_policy, setting, setting_false, setting_true)
+	return believes(policy, counterfactual_policy, D_S, args_false, args_true)
 
 def test_T_type_belief(game):
 
