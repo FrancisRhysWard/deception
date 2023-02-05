@@ -1,8 +1,6 @@
-	
 import numpy as np
 from scipy.stats import bernoulli
-import pycid
-from belief import *
+
 
 class S_ws:
 
@@ -83,53 +81,3 @@ class wimp_surly:
 		UT = T.utility(DT, S)
 		US = S.utility(DT, DS)
 		return S.type, DS, DT, US, UT
-
-	def Q_learn(self, num_games=100, PSO=False):
-		"""
-		A basic Q learning agent which learns the utilities for S given actions and type and fixed policy for T
-		"""
-		Q = np.zeros((2,2))  #innit Q values 2x2 for state x action
-		S = S_ws()
-		T = T_ws()
-		for ep in range(1,num_games):
-			t, DS, DT, US, UT = self.play_game(S, T, PSO=PSO)
-			# print("Q, ", Q)
-			Q[t,DS] = US
-
-		return Q
-
-
-if __name__ == '__main__':
-	
-	game = wimp_surly()
-
-	# t, DS, DT, US, UT = game.play_game()
-	# print("Type, ", t)	
-	# print("Utilities, ",US, UT)
-
-	Q = game.Q_learn(num_games=100, PSO=True)
-	print(Q)
-
-	macid = pycid.MACID(
-    [("X", "Ds"), ("X", "Ut"), ("X", "Us"), ("Ds", "Dt"), ("Ds", "Us"), ("Dt", "Us"), ("Dt", "Ut")],
-    agent_decisions={1: ["Ds"], 2: ["Dt"]},
-    agent_utilities={1: ["Us"], 2: ["Ut"]},
-	)
-
-	macid.add_cpds(
-    Ds=[0,1],
-    Dt=[0,1],
-    X={0: 0.1, 1: 0.9},
-    Us=lambda X, Dt, Ds: game.S.utility(Dt, Ds, X=X),
-    Ut=lambda X, Dt: game.T.utility(Dt, game.S, X=X),
-    )
-
-	# macid.draw()
-	ne = macid.get_ne()
-	print(len(ne))
-	for i in range(len(ne)):
-		print(f"NE {i}")
-		print(ne)
-
-	test_S_type_belief(game, Q)
-	test_T_type_belief(game)
