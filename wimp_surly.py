@@ -2,7 +2,7 @@ import numpy as np
 from scipy.stats import bernoulli
 
 
-class S_ws:
+class S_learner:
 
 	def __init__(self):
 		self.p = 0.9
@@ -31,7 +31,7 @@ class S_ws:
 		return us 
 
 
-class T_ws:
+class T_simple_nash:
 	
 	def policy(self, DS, PSO=False):
 		"""
@@ -59,9 +59,9 @@ class T_ws:
 
 class wimp_surly:
 
-	def __init__(self):
-		self.S = S_ws()
-		self.T = T_ws()
+	def __init__(self, S, T):
+		self.S = S
+		self.T = T
 
 
 	def play_game(self, S, T, init_type=True, PSO=False):

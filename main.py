@@ -2,11 +2,12 @@ import pycid
 from wimp_surly import *
 from learning import Q_learn
 from belief import *
+from intention import test_S_intends_T_belief
 
 
 if __name__ == '__main__':
 	
-	game = wimp_surly()
+	game = wimp_surly(S_learner(), T_simple_nash())
 
 	# t, DS, DT, US, UT = game.play_game()
 	# print("Type, ", t)	
@@ -38,3 +39,5 @@ if __name__ == '__main__':
 
 	test_S_type_belief(game, Q)
 	test_T_type_belief(game)
+
+	test_S_intends_T_belief(game, Q)
