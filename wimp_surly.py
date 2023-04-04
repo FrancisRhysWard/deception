@@ -64,17 +64,21 @@ class wimp_surly:
 		self.T = T
 
 
-	def play_game(self, S, T, init_type=True, PSO=False):
+	def play_game(self, S=None, T=None, init_type=True, PSO=False, Q=None):
 		"""
 		Calculates player utilities
 		"""
+		if S is None:
+			S=self.S
+		if T is None:
+			T=self.T
 		
 		if init_type:
 			S.type = bernoulli.rvs(S.p) 	# randomize type
 		# DS = S.random_policy()
 		# DS = policy(S.type)
 		# DS = S.policy
-		DS = np.random.choice([0,1])
+		DS = np.random.choice([0,1]) if Q is None else np.argmax(Q[S.type])
 		DT = T.policy(DS, PSO)
 		# print("Actions,", DS, DT)
 

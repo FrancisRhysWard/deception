@@ -4,13 +4,20 @@ from learning import Q_learn
 '''
 GENERIC INTENTION FUNCTION, TODO
 '''
-def intents(policy, ) -> bool :
+def intends_to_influence(policy, game, variable) -> bool :
     #we intend to influence a variable if : 
     #the expected utility of the policy is <= than that of a reference policy where an intervention has been made doing precisely that influence
 
     ...
 
-    return 0
+    return False
+
+def intends_to_bring_about(policy, game, outcome) -> bool :
+
+    #we can imagine the outcome is a tuple (variable, outcome) under the hood?
+    
+
+    return False
 
 
 '''
@@ -49,7 +56,7 @@ class T_reference:
 '''
 Hard-Coded ish function testing S's intention to influence T's decision. TODO : better
 '''
-def S_intends_T_belief(game, Q) -> bool :
+def S_intends_to_influence_D_T(game, Q) -> bool :
 
     strong = 1
     weak = 0
@@ -90,14 +97,33 @@ def S_intends_T_belief(game, Q) -> bool :
     expected_actual_utility = game.S.p * game.S.utility(D_T_strong, D_S_strong) + (1 - game.S.p) * game.S.utility(D_T_weak, D_S_weak)
     expected_reference_utility = game.S.p * game.S.utility(D_T_strong_ref, D_S_strong_ref) + (1 - game.S.p) * game.S.utility(D_T_weak_ref, D_S_weak_ref)
 
-    print(f"actual utility : {expected_actual_utility} ; reference utility : {expected_reference_utility}")
+    #print(f"actual utility : {expected_actual_utility} ; reference utility : {expected_reference_utility}")
     return expected_actual_utility <= expected_reference_utility
 
 
-def test_S_intends_T_belief(game, Q):
+def S_intends_to_bring_about_D_T(game, Q, outcome) -> bool :
+
+    intends_to_influence = S_intends_to_influence_D_T(game, Q)
+
+    outcome_possible = True #in our simple hardcoded setting
+
+    #outcome = D_T in this context.
+
+    utility_outcome = game.S.utility(outcome, 1 - outcome) #here we do this because both decisions are always opposite?
+    alternative_utility = game.S.utility(1 - outcome, outcome)
+    is_best_outcome = utility_outcome >= alternative_utility
+
+    return intends_to_influence and outcome_possible and is_best_outcome
+
+
+def test_S_intends_to_influence_D_T(game, Q):
 
     print("\n\n=============TESTING=S=INTENTION============")
 
-    intends = S_intends_T_belief(game, Q)
+    intends = S_intends_to_influence_D_T(game, Q)
     connector = "does" if intends else "doesn't"
     print(f"S {connector} intend to influence T's decision")
+
+    for outcome in [0, 1]:
+        itba = S_intends_to_bring_about_D_T(game, Q, outcome)
+        print(f"S intends to bring about D_T={outcome}? {itba}")

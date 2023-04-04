@@ -1,0 +1,20 @@
+look into mdp constraints
+reward shaping
+
+
+OPTIONS :
+
+ * Shielding policy: having safety constraints, and if they're not verified, we replace the action by one produced by a safe (sub-optimal) policy.
+
+ * Reward Shaping : look into that. give negative feedback to deceptive policies.
+
+ * Prevent deceptive actions to be explored. (perhaps keep track of actions that were deceptive and revert them).
+
+ other:
+ 
+ * actor critic? constrained mdp?
+
+
+Reward-Shaping : wrap the utility function in an object that adds C < 0 to the utility if the policy is detected as negative.
+
+Shield : wrap the policy in shielded policy that, before executing an action, checks that it's not deceptive, and if it is, do somethign else.
