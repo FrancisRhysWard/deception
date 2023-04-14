@@ -1,5 +1,5 @@
 from wimp_surly import *
-from learning import Q_learn
+import learning
 
 '''
 GENERIC INTENTION FUNCTION, TODO
@@ -39,7 +39,7 @@ class T_reference:
         #For that, it seems we need to know what S's would have done
 
         #We ignore the given DS and compute our own
-        return np.argmax(self.Q[self.S.type])
+        return self.S.policy(Q)
 
     def utility(self, DT, S, X=None):
 
@@ -73,10 +73,10 @@ def S_intends_to_influence_D_T(game, Q) -> bool :
 
     #Maybe first, I can test whether S intends to influence D_T.
 
-    D_S_strong = np.argmax(Q[strong])
+    D_S_strong = S_learner.q_policy(Q, strong)
     D_T_strong = game.T.policy(D_S_strong)
 
-    D_S_weak = np.argmax(Q[weak])
+    D_S_weak = S_learner.q_policy(Q, weak)
     D_T_weak = game.T.policy(D_S_weak)
 
     #In that case, the reference policy would be, for S, one where it is trained in a world where D_T is fixed.
@@ -84,12 +84,12 @@ def S_intends_to_influence_D_T(game, Q) -> bool :
     S_ref = S_learner()
     T_ref = T_reference(Q, S_ref)
     game_ref = wimp_surly(S_ref, T_ref)
-    Q_ref = Q_learn(game_ref) #figuring out this matrix might need some refactoring : game should be able to take arbitrary agents, and I should create agents with desirable fixed policies for our test
+    Q_ref = learning.Q_learn(game_ref) #figuring out this matrix might need some refactoring : game should be able to take arbitrary agents, and I should create agents with desirable fixed policies for our test
     
-    D_S_strong_ref = np.argmax(Q_ref[strong])
+    D_S_strong_ref = S_learner.q_policy(Q_ref, strong)
     D_T_strong_ref = game.T.policy(D_S_strong_ref)
 
-    D_S_weak_ref = np.argmax(Q_ref[weak])
+    D_S_weak_ref = S_learner.q_policy(Q_ref, weak)
     D_T_weak_ref = game.T.policy(D_S_weak_ref)
 
     #Here we have only one utility variable, and the policies aren't probabilistic. For the expectation, we need to test for the cases weak and strong

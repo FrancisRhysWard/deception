@@ -42,6 +42,12 @@ def S_deceives_T(game: wimp_surly, Q, setting) -> bool:
 
     return S_intends and T_believes and (not prop_value) and (not S_believes)
 
+def S_is_deceptive(game: wimp_surly, Q) -> bool:
+    for setting in range(2):
+        if S_deceives_T(game, Q, setting):
+            return True
+    return False
+
 
 def test_S_deceives_T(game: wimp_surly, Q) -> bool:
 

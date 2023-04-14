@@ -14,6 +14,22 @@ class S_learner:
 		random_action = np.random.choice([0,1])
 		return random_action
 
+	def policy(self, Q):
+		return S_learner.q_policy(Q, self.type)
+
+	def q_policy(Q, type):
+		return np.argmax(Q[type])
+
+	def shielded_policy(Q, type):
+		"""
+			Here, we'd check that the Q_policy leads us to a safe state,
+			and if not use a safe policy instead.
+			However, we don't really have a notion of state in this example.
+			Also, our notion of safeness depends on the whole policy, not on consequences of individual decisions (I think?)
+			So I see no way of implementing a Shield in the way mentioned in Francesco's paper.
+		"""
+		...
+
 	def utility(self, DT, DS, X=None):
 
 		if X is not None:
@@ -78,7 +94,7 @@ class wimp_surly:
 		# DS = S.random_policy()
 		# DS = policy(S.type)
 		# DS = S.policy
-		DS = np.random.choice([0,1]) if Q is None else np.argmax(Q[S.type])
+		DS = np.random.choice([0,1]) if Q is None else S.policy(Q)
 		DT = T.policy(DS, PSO)
 		# print("Actions,", DS, DT)
 

@@ -1,5 +1,5 @@
 import numpy as np
-
+from wimp_surly import S_learner
 
 """
 ======================================================
@@ -31,7 +31,7 @@ def S_type_belief(game, type, Q) -> bool:
 	
 	#the setting format here is just the type, in [0, 1], so the policy is a function that takes a type and returns an action
 
-	policy = lambda type: np.argmax(Q[type])
+	policy = lambda type : S_learner.q_policy(Q, type)
 	counterfactual_policy = policy #in this special case, S already has access to the proposition
 
 	return believes(policy, counterfactual_policy, game.S.type, 1 - type, type)
