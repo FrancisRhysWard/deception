@@ -4,9 +4,10 @@ from scipy.stats import bernoulli
 
 class S_learner:
 
-	def __init__(self):
+	def __init__(self, pure_signalling):
 		self.p = 0.9
 		self.type = bernoulli.rvs(self.p)
+		self.pure_signalling = pure_signalling
 
 	def random_policy(self):
 		"""
@@ -36,12 +37,13 @@ class S_learner:
 			self.type = X
 
 		us = 0
-		if self.type == 0:
-			if DS == 1:
-				us+= 1
-		elif self.type == 1:
-			if DS == 0:
-				us +=1
+		if not self.pure_signalling:
+			if self.type == 0:
+				if DS == 1:
+					us+= 1
+			elif self.type == 1:
+				if DS == 0:
+					us +=1
 		if DT == 1:
 			us += 2
 		return us 
@@ -75,9 +77,10 @@ class T_simple_nash:
 
 class wimp_surly:
 
-	def __init__(self, S, T):
+	def __init__(self, S, T, pure_signalling):
 		self.S = S
 		self.T = T
+		self.pure_signalling = pure_signalling
 
 
 	def play_game(self, S=None, T=None, init_type=True, PSO=False, Q=None):

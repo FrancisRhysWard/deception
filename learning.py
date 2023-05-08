@@ -7,10 +7,10 @@ def Q_learn(game, num_games=100, PSO=False):
 	A basic Q learning agent which learns the utilities for S given actions and type and fixed policy for T
 	"""
 	Q = np.zeros((2,2))  #init Q values 2x2 for state x action
-	S = S_learner()
-	T = T_simple_nash()
+	#S = S_learner(game.pure_signalling)
+	#T = T_simple_nash()
 	for ep in range(1,num_games):
-		t, DS, DT, US, UT = game.play_game(S=S, T=T, PSO=PSO)
+		t, DS, DT, US, UT = game.play_game(PSO=PSO)
 		# print("Q, ", Q)
 		Q[t,DS] = US
 
@@ -19,7 +19,7 @@ def Q_learn(game, num_games=100, PSO=False):
 def Q_learn_shield(game, num_games=100): # a special kind of shield, where we don't learn bad actions
 
 	Q = np.zeros((2,2))
-	S = S_learner()
+	S = S_learner(game.pure_signalling)
 	T = T_simple_nash()
 	for ep in range(1, num_games):
 
@@ -28,13 +28,16 @@ def Q_learn_shield(game, num_games=100): # a special kind of shield, where we do
 		updated_Q[t, DS] = US
 		if not deception.S_is_deceptive(game, updated_Q):
 			Q = updated_Q
+		else:
+			#update Q with either 0, or -inf, not sure, to discuss
+			Q[t, DS] = -np.inf
 
 	return Q
 
 def Q_learn_reward_shaping(game, num_games=100, punishement=2, set=False): # a special kind of shield, where we don't learn bad actions
 
 	Q = np.zeros((2,2))
-	S = S_learner()
+	S = S_learner(game.pure_signalling)
 	T = T_simple_nash()
 	for ep in range(1, num_games):
 

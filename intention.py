@@ -39,7 +39,7 @@ class T_reference:
         #For that, it seems we need to know what S's would have done
 
         #We ignore the given DS and compute our own
-        return self.S.policy(Q)
+        return 1 - self.S.policy(self.Q)
 
     def utility(self, DT, S, X=None):
 
@@ -81,9 +81,9 @@ def S_intends_to_influence_D_T(game, Q) -> bool :
 
     #In that case, the reference policy would be, for S, one where it is trained in a world where D_T is fixed.
 
-    S_ref = S_learner()
+    S_ref = S_learner(game.pure_signalling)
     T_ref = T_reference(Q, S_ref)
-    game_ref = wimp_surly(S_ref, T_ref)
+    game_ref = wimp_surly(S_ref, T_ref, game.pure_signalling)
     Q_ref = learning.Q_learn(game_ref) #figuring out this matrix might need some refactoring : game should be able to take arbitrary agents, and I should create agents with desirable fixed policies for our test
     
     D_S_strong_ref = S_learner.q_policy(Q_ref, strong)

@@ -8,7 +8,8 @@ from deception import test_S_deceives_T, S_is_deceptive
 
 if __name__ == '__main__':
 	
-	game = wimp_surly(S_learner(), T_simple_nash())
+	pure_signalling = True
+	game = wimp_surly(S_learner(pure_signalling), T_simple_nash(), pure_signalling)
 
 	# t, DS, DT, US, UT = game.play_game()
 	# print("Type, ", t)	
@@ -32,37 +33,38 @@ if __name__ == '__main__':
     )
 
 	# macid.draw()
-	ne = macid.get_ne()
-	print(len(ne))
-	for i in range(len(ne)):
-		print(f"NE {i}")
-		print(ne)
+	#ne = macid.get_ne()
+	#print(len(ne))
+	#for i in range(len(ne)):
+	#	print(f"NE {i}")
+	#	print(ne)
 
 	test_S_type_belief(game, Q)
-	test_T_type_belief(game)
 
-	test_S_intends_to_influence_D_T(game, Q)
+	#test_T_type_belief(game)
 
-	print("\nTESTING=DECEPTION=WITH=LEARNED=POLICY")
-	test_S_deceives_T(game, Q)
+	#test_S_intends_to_influence_D_T(game, Q)
 
-	print("\nTESTING=DECEPTION=WITH=CRAFTED=DECEPTIVE=POLICY")
-	deceptive_Q = np.array([[1,0],[1,0]]) # This policy always attacks, even when S is weak
-	test_S_deceives_T(game, deceptive_Q)
+	#print("\nTESTING=DECEPTION=WITH=LEARNED=POLICY")
+	#test_S_deceives_T(game, Q)
+
+	#print("\nTESTING=DECEPTION=WITH=CRAFTED=DECEPTIVE=POLICY")
+	#deceptive_Q = np.array([[1,0],[1,0]]) # This policy always attacks, even when S is weak
+	#test_S_deceives_T(game, deceptive_Q)
 
 	print("\nTESTING=DECEPTION=WITH=SHIELDED=POLICY")
 	shielded_Q = Q_learn_shield(game, num_games=100)
 	print(f"shielded Q : {shielded_Q}")
 	test_S_deceives_T(game, shielded_Q)
 
-	print("\nTESTING=DECEPTION=WITH=REWARD=SHAPING")
-	for set in [False, True]:
-		print(f"when set={set}")
-		for p in range(-2, 5):
-			print(f'	when punishement={p}:')
-			rs_Q = Q_learn_reward_shaping(game, num_games=100, punishement=p, set=set)
-			print(f"	reward_shaping_Q : {rs_Q}")
-			print(f"""	-> S {"is" if S_is_deceptive(game, rs_Q) else "isn't"} deceptive""")
+	#print("\nTESTING=DECEPTION=WITH=REWARD=SHAPING")
+	#for set in [False, True]:
+	#	print(f"when set={set}")
+	#	for p in range(-2, 5):
+	#		print(f'	when punishement={p}:')
+	#		rs_Q = Q_learn_reward_shaping(game, num_games=100, punishement=p, set=set)
+	#		print(f"	reward_shaping_Q : {rs_Q}")
+	#		print(f"""	-> S {"is" if S_is_deceptive(game, rs_Q) else "isn't"} deceptive""")
 
 	print("\nTESTING=DECEPTION=WITH=PSO=POLICY")
 	pso_Q = Q_learn(game, num_games=100, PSO=True)
