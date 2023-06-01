@@ -2,37 +2,30 @@ import numpy as np
 from wimp_surly import *
 import deception
 
-def Q_learn(game, num_games=100, PSO=False):
-	"""
-	A basic Q learning agent which learns the utilities for S given actions and type and fixed policy for T
-	"""
-	Q = np.zeros((2,2))  #init Q values 2x2 for state x action
-	#S = S_learner(game.pure_signalling)
-	#T = T_simple_nash()
-	for ep in range(1,num_games):
-		t, DS, DT, US, UT = game.play_game(PSO=PSO)
-		# print("Q, ", Q)
-		Q[t,DS] = US
+def general_Q_learn(game, q_shape, num_games=100, deception_check=None, Q_ref=None, pnsh=0, **game_args):
+	if deception_check is not None:
+		assert Q_ref is not None
+
+	Q = np.array(Q_ref) if Q_ref is not None else np.zeros(q_shape)
+	for ep in range(1, num_games):
+		idx, DS, DT, US, UT = game.play_game(**game_args)
+		u_Q = np.array(Q)
+		u_Q[idx, DS] = US
+		if deception_check is None or not deception_check(game, u_Q, Q_ref):
+			Q = u_Q
+			Q_ref = Q
+		else:
+			Q[idx, DS] = pnsh
 
 	return Q
+
+
+
+def Q_learn(game, num_games=100, PSO=False):
+	return general_Q_learn(game, (2,2), num_games=num_games, PSO=PSO)
 
 def Q_learn_shield(game, num_games=100): # a special kind of shield, where we don't learn bad actions
-
-	Q = np.zeros((2,2))
-	S = S_learner(game.pure_signalling)
-	T = T_simple_nash()
-	for ep in range(1, num_games):
-
-		t, DS, DT, US, UT = game.play_game(S=S, T=T, PSO=False)
-		updated_Q = np.array(Q)
-		updated_Q[t, DS] = US
-		if not deception.S_is_deceptive(game, updated_Q):
-			Q = updated_Q
-		else:
-			#update Q with either 0, or -inf, not sure, to discuss
-			Q[t, DS] = -np.inf
-
-	return Q
+	return general_Q_learn(game, (2,2), num_games=num_games, PSO=False, shielding=True, pnsh=-np.inf)
 
 def Q_learn_reward_shaping(game, num_games=100, punishement=2, set=False): # a special kind of shield, where we don't learn bad actions
 
