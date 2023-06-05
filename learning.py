@@ -2,7 +2,7 @@ import numpy as np
 from wimp_surly import *
 import deception
 
-def general_Q_learn(game, q_shape, num_games=100, deception_check=None, Q_ref=None, pnsh=0, **game_args):
+def general_Q_learn(game, q_shape, num_games=100, deception_check=None, Q_ref=None, pnsh=None, **game_args):
 	if deception_check is not None:
 		assert Q_ref is not None
 
@@ -11,11 +11,20 @@ def general_Q_learn(game, q_shape, num_games=100, deception_check=None, Q_ref=No
 		idx, DS, DT, US, UT = game.play_game(**game_args)
 		u_Q = np.array(Q)
 		u_Q[idx, DS] = US
+		h = False
+		#if idx==5 and DS==1:
+			#print(f"(5,1) -> US={US}, and Q=\n{Q}")
+			#h = True
 		if deception_check is None or not deception_check(game, u_Q, Q_ref):
 			Q = u_Q
 			Q_ref = Q
+			#if h:
+				#print(f"and we update")
 		else:
-			Q[idx, DS] = pnsh
+			if pnsh is not None:
+				Q[idx, DS] = pnsh
+			#if h:
+				#print(f"but we don't update")
 
 	return Q
 

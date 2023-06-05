@@ -62,7 +62,7 @@ class bet_game:
 		self.p = 0.3
 
 
-	def play_game(self, S=None, T=None, PSO=False, Q=None, X=None, Y=None, is_ref=False):
+	def play_game(self, S=None, T=None, PSO=False, Q=None, X=None, Y=None, is_interv=False):
 		"""
 		Calculates player utilities
 		"""
@@ -75,7 +75,7 @@ class bet_game:
 		self.Y = Y if Y is not None else np.random.rand() < self.p
 
 		DS = np.random.choice([0,1,2]) if Q is None else S.policy(Q, self.X, self.Y)
-		DT = T.policy(DS, self.X, self.Y, PSO=PSO) if is_ref else T.policy(DS, PSO)
+		DT = T.policy(DS, self.X, self.Y, PSO=PSO) if is_interv else T.policy(DS, PSO)
 		# print("Actions,", DS, DT)
 
 		UT = T.utility(DT, self.X)

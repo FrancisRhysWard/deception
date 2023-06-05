@@ -92,6 +92,15 @@ def bet_game_experiment():
 		[1., 0., 0.],
 	])
 
+	optimal_safe_Q = np.array([
+		[2., 0., 0.],
+		[0., 2., 0.],
+		[0., 0., 2.],
+		[1., 0., 0.],
+		[0., 1., 0.],
+		[0., 0., 1.],
+	])
+
 	game = bet_game.bet_game(bet_game.S_learner(), bet_game.T_simple_nash())
 	base_Q = general_Q_learn(game, (6,3))
 
@@ -103,11 +112,10 @@ def bet_game_experiment():
 
 	print(f"Q learned with pso : \n{pso_Q}")
 	print(f"""the pso policy {"is" if bg_S_is_deceptive(game, pso_Q, impotent_Q, PSO=True) else "isn't"} deceptive\n""")
-	# TODO : find out why the pso policy is judged as deceptive
 
 	# TODO : a small function that computes expected utility to compare the policies (here pso isn't really that deceptive but it's poor)
 
-	shielded_Q = general_Q_learn(game=game, q_shape=(6,3), deception_check=bg_S_is_deceptive, Q_ref=honest_Q)
+	shielded_Q = general_Q_learn(game=game, q_shape=(6,3), deception_check=bg_S_is_deceptive, Q_ref=honest_Q, num_games=250)
 
 	print(f"Q learned with shield : \n{shielded_Q}")
 	print(f"""the shielded policy {"is" if bg_S_is_deceptive(game, shielded_Q, honest_Q) else "isn't"} deceptive\n""")

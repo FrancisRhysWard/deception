@@ -2,6 +2,8 @@ from wimp_surly import *
 import bet_game
 import learning
 
+from copy import copy
+
 '''
 GENERIC INTENTION FUNCTION, TODO
 '''
@@ -54,7 +56,7 @@ class ws_T_reference:
             return 1 - DT
 
 
-class bg_T_reference:
+class bg_T_interv:
 
     def __init__(self, Q):
         self.Q = Q # we store Q to know how S would have acted
@@ -140,18 +142,9 @@ def ws_S_intends_to_bring_about_D_T(game, Q, outcome) -> bool :
     HARD-CODED FUNCTIONS FOR THE BET-GAME EXPERIMENT
 '''
 
-def expected_utility(utilities, p):
-    expected_utility = 0
-    for i in range(3):
-        expected_utility += (1.0 - p) * utilities[i] / 3.0
-    for i in range(3, 6):
-        expected_utility += p * utilities[i] / 3.0
-    return expected_utility
-
-
 def bg_S_intends_to_influence_D_T(game, Q, Q_ref, PSO=False) -> bool :
     S_ref = game.S
-    T_ref = bg_T_reference(Q)
+    T_ref = bg_T_interv(Q)
     game_ref = bet_game.bet_game(S_ref, T_ref)
     #TODO : check minimality conditions
     #TODO : learn with PSO when it should be the case
@@ -166,7 +159,6 @@ def bg_S_intends_to_influence_D_T(game, Q, Q_ref, PSO=False) -> bool :
 
     #okay maybe I complicated things too much. what does it mean "if that variable was fixed S wouldn't have done that" in terms of our Q matrix?
     #
-    #Q_ref = learning.general_Q_learn(game=game_ref, q_shape=(6,3), is_ref=True) # TODO : factor that out. we probably don't need to recompute it for every setting.
 
     #there's 6 possible settings. for each of them we need to play a normal game and a reference game. that is 12 games.
     actual_utilities = []
@@ -175,7 +167,7 @@ def bg_S_intends_to_influence_D_T(game, Q, Q_ref, PSO=False) -> bool :
         for x in range(3):
             _, _, _, US, _ = game.play_game(X=x, Y=y, Q=Q, PSO=PSO)
             #S and T have no state so the only difference between the actual and reference games is the Q matrix
-            _, _, _, US_ref, _ = game_ref.play_game(X=x, Y=y, Q=Q_ref, is_ref=True, PSO=PSO)
+            _, _, _, US_ref, _ = game_ref.play_game(X=x, Y=y, Q=Q_ref, is_interv=True, PSO=PSO)
 
             actual_utilities.append(US)
             reference_utilities.append(US_ref)
@@ -196,7 +188,6 @@ def bg_S_intends_to_bring_about_D_T(game, Q, Q_ref, outcome, x, y, PSO=False) ->
     else:
         outcome_possible = outcome==0
 
-
     #outcome = D_T in this context.
 
     utility_outcome = game.S.utility(outcome, x, y)
@@ -205,6 +196,136 @@ def bg_S_intends_to_bring_about_D_T(game, Q, Q_ref, outcome, x, y, PSO=False) ->
     is_best_outcome = utility_outcome >= alternative_utility_1 and utility_outcome >= alternative_utility_2
 
     return intends_to_influence and outcome_possible and is_best_outcome
+
+
+def bg_S_intends_to_cause(game, Q, Q_ref, setting, PSO=False) -> bool:
+
+    #it seems in this case X = Y = D_T. the only thing S could want to influence is D_T
+
+    """
+        This may build a minimal set of settings for which this holds, TODO 
+        1. check for empty set. if this holds, then no set will be minimal, meaning FALSE
+        2. check for the set {setting}. if this holds, then return true.
+        3. if not, test all combinations, in some sort of increasing order : meaning if we find one, we know it's minimal
+            -> bottom up.
+        4. return false when we arrived at the whole setting space and it's not valid
+    """
+
+    #let's assume we already know Y and W_Y
+        # -> in this case Y is always D_T
+        # -> W is?
+
+    #1. check that they're subset minimal
+        # -> since we have only 1 variable, just check that it doesn't hold for empty set
+
+    #2. compute expected utilities under policy
+
+    #3. compute expected utilities under reference policy
+
+    #4. output comparaison 
+
+    # NOTE : this function will likely do more than asked, so we should keep the results and use them to improve efficency
+    
+
+
+    S_interv = game.S
+    T_interv = bg_T_interv(Q)
+    game_interv = bet_game.bet_game(S_interv, T_interv)
+
+    actual_utilities = []
+    ref_utilities_no_interv = []
+    ref_utilities_interv = []
+
+    #First we compute all the utilities we'll need
+    for y in range(2):
+        for x in range(3):
+            _, _, _, US, _ = game.play_game(X=x, Y=y, Q=Q, PSO=PSO)
+            #S and T have no state so the only difference between the actual and reference games is the Q matrix
+            _, _, _, US_ref_interv, _ = game_interv.play_game(X=x, Y=y, Q=Q_ref, is_interv=True, PSO=PSO)
+            _, _, _, US_ref_no_interv, _ = game.play_game(X=x, Y=y, Q=Q_ref, is_interv=False, PSO=PSO)
+
+            actual_utilities.append(US)
+            ref_utilities_no_interv.append(US_ref_no_interv)
+            ref_utilities_interv.append(US_ref_interv)
+
+    expected_actual_utility = expected_utility(actual_utilities, game.p)
+
+    empty_set = [False for _ in range(6)]
+    empty_set_check = check_inequality(expected_actual_utility, ref_utilities_no_interv, ref_utilities_interv, empty_set, game.p)
+
+    if empty_set_check: # in this case, no set containing e can be minimal
+        return False
+    
+    #================ALL=OF=THE=ABOVE=CAN=BE=FACTORED=OUT=NO=DEPENDANCY=ON=SETTING================ TODO
+
+    #now we need to find combinations of runi and rui that satisfy minmality + inequality
+    #e = setting has to be part of the set.
+    (x,y) = setting
+    setting_index = 3*y + x
+    setting_set = empty_set
+    setting_set[setting_index] = True
+    
+    minimal_set = find_minimal_set(setting_set, expected_actual_utility, ref_utilities_no_interv, ref_utilities_interv, game.p)
+    #if minimal_set is not None:
+    #    print(f"setting={setting}, minimal_set={minimal_set}")
+    #else:
+    #    print(f"minimality not respected!")
+    return minimal_set is not None
+    
+    # other combinations : there's 2^(n-1) - 1 combinations left to check, where n is the cardinality of the setting space.
+    # in our case, that's 31 combinations to test. they correspond to the numbers 1-31.
+    # idea : we proceed in reverse. the natural thing to do is to do recursively
+    # we start with E, and we check the inequality for it. 
+    # we then, for e in E, check E - {e} recursively.
+    # the problem would be for that that we check the highest cardinality first.
+    # but if we start with the empty set and just inverse everything, it works out fine.
+    # procedure for finding minimal subset validating inequality : 
+    # start with empty set 
+    # check inequality
+    # if true, return that
+    # else, for each element not in S, add it, (set to true), and recursively find a minimal subset
+
+
+    #true procedure for finding maximal subset validating property in powerset(S): (to remove)
+    #start with S
+    #check property
+    #then if valid return S
+    #if not valid, for s in S, recursively check S - {s}. if any returns something, that's a maximal subset.
+    
+
+
+
+def find_minimal_set(W, e_a_u, r_u_n_i, r_u_i, p): # returns a minimal set validating property, or None if no such set exists.
+    if check_inequality(e_a_u, r_u_n_i, r_u_i, W, p):
+        return W
+    else:
+        for i, b in enumerate(W):
+            if not b: # an element that could be added to form a potential minimal set
+                W_c = copy(W)
+                W_c[i] = True
+                candidate = find_minimal_set(W_c, e_a_u, r_u_n_i, r_u_i, p)
+                if candidate is not None:
+                    return candidate
+        # if we're here we found no minimal set by looking into supersets of W, so this branch doesn't lead to a minimal set.
+        return None
+
+
+def expected_utility(utilities, p):
+    expected_utility = 0
+    for i in range(3):
+        expected_utility += (1.0 - p) * utilities[i] / 3.0
+    for i in range(3, 6):
+        expected_utility += p * utilities[i] / 3.0
+    return expected_utility
+
+def check_inequality(e_a_u, r_u_n_i, r_u_i, W, p) -> bool:
+    # W is a list of booleans, indicating if the i'th element is part of the setting Set.
+    r_utilities = []
+    for i in range(6):
+        r_utilities.append(r_u_i[i] if W[i] else r_u_n_i[i])
+
+    return e_a_u <= expected_utility(r_utilities, p)
+            
 
 
 
